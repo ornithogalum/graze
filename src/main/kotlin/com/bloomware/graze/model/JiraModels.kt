@@ -1,7 +1,6 @@
 package com.bloomware.graze.model
 
 import com.google.gson.annotations.SerializedName
-import java.time.LocalDateTime
 
 /**
  * Data classes representing JIRA API responses and ticket information.
@@ -11,16 +10,11 @@ data class JiraTicket(
     val key: String,
     val fields: JiraFields
 ) {
-    fun getBranchName(): String {
-        return "feature/$key"
-    }
-    
     fun getTitle(): String = "[$key]: ${fields.summary}"
 }
 
 data class JiraFields(
     val summary: String,
-    val description: String?,
     val status: JiraStatus,
     val assignee: JiraUser?,
     val reporter: JiraUser?,

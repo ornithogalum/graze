@@ -45,15 +45,10 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <!-- Application Services -->
-        <applicationService serviceInterface="com.bloomware.graze.config.GrazeConfigurationService" serviceImplementation="com.bloomware.graze.config.GrazeConfigurationService"/>
-        <applicationService serviceInterface="com.bloomware.graze.services.JiraService" serviceImplementation="com.bloomware.graze.services.JiraService"/>
-        <applicationService serviceInterface="com.bloomware.graze.services.AzureDevOpsService" serviceImplementation="com.bloomware.graze.services.AzureDevOpsService"/>
-        
-        <!-- Project Services -->
-        <projectService serviceInterface="com.bloomware.graze.services.GitService" serviceImplementation="com.bloomware.graze.services.GitService"/>
-        
+        <applicationService serviceImplementation="com.bloomware.graze.config.GrazeConfigurationService"/>
+
         <!-- Tool Window -->
-        <toolWindow id="Graze" displayName="Graze" anchor="right" icon="/icons/pluginIcon.svg" factoryClass="com.bloomware.graze.ui.GrazeToolWindowFactory"/>
+        <toolWindow id="Graze" anchor="right" icon="/icons/pluginIcon.svg" factoryClass="com.bloomware.graze.ui.GrazeToolWindowFactory"/>
     </extensions>
     
     <!-- Actions -->

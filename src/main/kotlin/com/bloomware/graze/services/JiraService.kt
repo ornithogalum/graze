@@ -47,6 +47,7 @@ class JiraService {
         
         val jql = buildString {
             append("assignee = currentUser()")
+            append(" AND type != Epic")
             if (!config.showCompletedTickets) {
                 append(" AND statusCategory != Done")
             }
@@ -105,66 +106,6 @@ class JiraService {
             logger.error(error, e)
             return ApiResult.Error(error, e)
         }
-    }
-    
-    /**
-     * Retrieves a specific ticket by key
-     */
-    fun getTicket(ticketKey: String): ApiResult<JiraTicket> {
-        val config = GrazeConfigurationService.getInstance().state
-        
-        try {
-            val baseUrl = config.jiraBaseUrl.trimEnd('/')
-            val ticketUrl = "$baseUrl/rest/api/3/issue/$ticketKey"
-            
-            val request = Request.Builder()
-                .url(ticketUrl)
-                .get()
-                .header("Authorization", createBasicAuthHeader(config.jiraUsername, config.jiraApiToken))
-                .header("Accept", "application/json")
-                .build()
-            
-            logger.info("Fetching JIRA ticket: $ticketKey")
-            
-            client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) {
-                    val error = "Failed to fetch ticket $ticketKey: HTTP ${response.code} - ${response.message}"
-                    logger.warn(error)
-                    return ApiResult.Error(error)
-                }
-                
-                val responseBody = response.body?.string() ?: ""
-                val ticket = gson.fromJson(responseBody, JiraTicket::class.java)
-                
-                logger.info("Successfully fetched ticket: $ticketKey")
-                return ApiResult.Success(ticket)
-            }
-        } catch (e: IOException) {
-            val error = "Network error while fetching ticket $ticketKey: ${e.message}"
-            logger.error(error, e)
-            return ApiResult.Error(error, e)
-        } catch (e: Exception) {
-            val error = "Unexpected error while fetching ticket $ticketKey: ${e.message}"
-            logger.error(error, e)
-            return ApiResult.Error(error, e)
-        }
-    }
-    
-    /**
-     * Gets tickets in specific statuses
-     */
-    fun getTicketsByStatus(statuses: List<String>): ApiResult<List<JiraTicket>> {
-        val statusClause = statuses.joinToString(",") { "'$it'" }
-        val jql = "assignee = currentUser() AND status IN ($statusClause) ORDER BY updated DESC"
-        return searchTickets(jql)
-    }
-    
-    /**
-     * Gets tickets for a specific project
-     */
-    fun getTicketsByProject(projectKey: String): ApiResult<List<JiraTicket>> {
-        val jql = "assignee = currentUser() AND project = '$projectKey' ORDER BY updated DESC"
-        return searchTickets(jql)
     }
     
     /**

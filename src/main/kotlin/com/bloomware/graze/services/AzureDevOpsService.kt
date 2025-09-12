@@ -220,12 +220,6 @@ class AzureDevOpsService {
             appendLine("## ${ticket.key}: ${ticket.fields.summary}")
             appendLine()
             
-            if (!ticket.fields.description.isNullOrBlank()) {
-                appendLine("### Description")
-                appendLine(ticket.fields.description)
-                appendLine()
-            }
-            
             appendLine("### Ticket Details")
             appendLine("- **Type:** ${ticket.fields.issuetype.name}")
             appendLine("- **Status:** ${ticket.fields.status.name}")
@@ -247,7 +241,7 @@ class AzureDevOpsService {
             appendLine()
             
             appendLine("---")
-            appendLine("*This pull request was created automatically by Graze plugin*")
+            appendLine("*This pull request was created automatically by Graze*")
         }
     }
     
