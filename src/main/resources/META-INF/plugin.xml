@@ -8,22 +8,59 @@
     <name>Graze</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor url="https://www.yourcompany.com">YourCompany</vendor>
+    <vendor url="https://www.bloomware.com">Bloomware</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
     <description><![CDATA[
-        Enter short description for your plugin here.<br>
-        <em>most HTML tags may be used</em>
+        <h3>Graze - JIRA to Azure DevOps Bridge</h3>
+        <p>A comprehensive plugin that streamlines the development workflow between JIRA issue tracking and Azure DevOps version control.</p>
+        
+        <h4>Features:</h4>
+        <ul>
+            <li><strong>List JIRA Tickets:</strong> View all tickets assigned to you with real-time status updates</li>
+            <li><strong>Create Git Branches:</strong> Automatically create properly named branches from ticket IDs</li>
+            <li><strong>Create Pull Requests:</strong> Generate Azure DevOps pull requests with rich ticket information</li>
+            <li><strong>Persistent Configuration:</strong> Securely store API keys and settings</li>
+            <li><strong>Integrated Workflow:</strong> Seamlessly switch between tickets, branches, and pull requests</li>
+        </ul>
+        
+        <h4>Requirements:</h4>
+        <ul>
+            <li>JIRA Cloud/Server access with API tokens</li>
+            <li>Azure DevOps access with Personal Access Tokens</li>
+            <li>Git repository in your project</li>
+        </ul>
+        
+        <p>Perfect for development teams using JIRA for issue tracking and Azure DevOps for code management.</p>
     ]]></description>
 
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.vcs</depends>
+    <depends>Git4Idea</depends>
 
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-
+        <!-- Application Services -->
+        <applicationService serviceInterface="com.bloomware.graze.config.GrazeConfigurationService" serviceImplementation="com.bloomware.graze.config.GrazeConfigurationService"/>
+        <applicationService serviceInterface="com.bloomware.graze.services.JiraService" serviceImplementation="com.bloomware.graze.services.JiraService"/>
+        <applicationService serviceInterface="com.bloomware.graze.services.AzureDevOpsService" serviceImplementation="com.bloomware.graze.services.AzureDevOpsService"/>
+        
+        <!-- Project Services -->
+        <projectService serviceInterface="com.bloomware.graze.services.GitService" serviceImplementation="com.bloomware.graze.services.GitService"/>
+        
+        <!-- Tool Window -->
+        <toolWindow id="Graze" displayName="Graze" anchor="right" icon="/icons/pluginIcon.svg" factoryClass="com.bloomware.graze.ui.GrazeToolWindowFactory"/>
     </extensions>
+    
+    <!-- Actions -->
+    <actions>
+        <group id="GrazeActions" text="Graze" popup="true">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <action id="Graze.OpenToolWindow" class="com.bloomware.graze.actions.OpenGrazeToolWindowAction" text="Open Graze Tool Window" description="Open the Graze tool window to manage JIRA tickets and Azure DevOps integration"/>
+        </group>
+    </actions>
 </idea-plugin>

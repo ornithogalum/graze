@@ -1,0 +1,209 @@
+package com.bloomware.graze.services
+
+import com.bloomware.graze.config.GrazeConfigurationService
+import com.bloomware.graze.model.*
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.diagnostic.thisLogger
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.IOException
+import java.util.*
+import java.util.concurrent.TimeUnit
+
+/**
+ * Service for interacting with JIRA REST API.
+ * Handles authentication, ticket retrieval, and JQL queries.
+ */
+@Service
+class JiraService {
+    
+    private val logger = thisLogger()
+    private val gson: Gson = GsonBuilder().create()
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .build()
+    
+    companion object {
+        fun getInstance(): JiraService {
+            return ApplicationManager.getApplication().getService(JiraService::class.java)
+        }
+    }
+    
+    /**
+     * Retrieves tickets assigned to the current user
+     */
+    fun getMyAssignedTickets(): ApiResult<List<JiraTicket>> {
+        val config = GrazeConfigurationService.getInstance().state
+        
+        if (!GrazeConfigurationService.getInstance().isJiraConfigured()) {
+            return ApiResult.Error("JIRA configuration is incomplete")
+        }
+        
+        val jql = buildString {
+            append("assignee = currentUser()")
+            if (!config.showCompletedTickets) {
+                append(" AND statusCategory != Done")
+            }
+            append(" ORDER BY updated DESC")
+        }
+        
+        return searchTickets(jql, config.maxTicketsToShow)
+    }
+    
+    /**
+     * Searches for tickets using JQL
+     */
+    fun searchTickets(jql: String, maxResults: Int = 50): ApiResult<List<JiraTicket>> {
+        val config = GrazeConfigurationService.getInstance().state
+        
+        try {
+            val baseUrl = config.jiraBaseUrl.trimEnd('/')
+            val searchUrl = "$baseUrl/rest/api/3/search"
+            
+            val requestBody = mapOf(
+                "jql" to jql,
+                "maxResults" to maxResults,
+                "fields" to listOf("summary", "description", "status", "assignee", "reporter", "issuetype", "priority", "created", "updated"),
+                "expand" to listOf("names", "schema")
+            )
+            
+            val request = Request.Builder()
+                .url(searchUrl)
+                .post(gson.toJson(requestBody).toRequestBody("application/json".toMediaType()))
+                .header("Authorization", createBasicAuthHeader(config.jiraUsername, config.jiraApiToken))
+                .header("Accept", "application/json")
+                .header("Content-Type", "application/json")
+                .build()
+            
+            logger.info("Searching JIRA tickets with JQL: $jql")
+            
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    val error = "Failed to search tickets: HTTP ${response.code} - ${response.message}"
+                    logger.warn(error)
+                    return ApiResult.Error(error)
+                }
+                
+                val responseBody = response.body?.string() ?: ""
+                val searchResponse = gson.fromJson(responseBody, JiraSearchResponse::class.java)
+                
+                logger.info("Found ${searchResponse.issues.size} tickets out of ${searchResponse.total} total")
+                return ApiResult.Success(searchResponse.issues)
+            }
+        } catch (e: IOException) {
+            val error = "Network error while searching tickets: ${e.message}"
+            logger.error(error, e)
+            return ApiResult.Error(error, e)
+        } catch (e: Exception) {
+            val error = "Unexpected error while searching tickets: ${e.message}"
+            logger.error(error, e)
+            return ApiResult.Error(error, e)
+        }
+    }
+    
+    /**
+     * Retrieves a specific ticket by key
+     */
+    fun getTicket(ticketKey: String): ApiResult<JiraTicket> {
+        val config = GrazeConfigurationService.getInstance().state
+        
+        try {
+            val baseUrl = config.jiraBaseUrl.trimEnd('/')
+            val ticketUrl = "$baseUrl/rest/api/3/issue/$ticketKey"
+            
+            val request = Request.Builder()
+                .url(ticketUrl)
+                .get()
+                .header("Authorization", createBasicAuthHeader(config.jiraUsername, config.jiraApiToken))
+                .header("Accept", "application/json")
+                .build()
+            
+            logger.info("Fetching JIRA ticket: $ticketKey")
+            
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    val error = "Failed to fetch ticket $ticketKey: HTTP ${response.code} - ${response.message}"
+                    logger.warn(error)
+                    return ApiResult.Error(error)
+                }
+                
+                val responseBody = response.body?.string() ?: ""
+                val ticket = gson.fromJson(responseBody, JiraTicket::class.java)
+                
+                logger.info("Successfully fetched ticket: $ticketKey")
+                return ApiResult.Success(ticket)
+            }
+        } catch (e: IOException) {
+            val error = "Network error while fetching ticket $ticketKey: ${e.message}"
+            logger.error(error, e)
+            return ApiResult.Error(error, e)
+        } catch (e: Exception) {
+            val error = "Unexpected error while fetching ticket $ticketKey: ${e.message}"
+            logger.error(error, e)
+            return ApiResult.Error(error, e)
+        }
+    }
+    
+    /**
+     * Gets tickets in specific statuses
+     */
+    fun getTicketsByStatus(statuses: List<String>): ApiResult<List<JiraTicket>> {
+        val statusClause = statuses.joinToString(",") { "'$it'" }
+        val jql = "assignee = currentUser() AND status IN ($statusClause) ORDER BY updated DESC"
+        return searchTickets(jql)
+    }
+    
+    /**
+     * Gets tickets for a specific project
+     */
+    fun getTicketsByProject(projectKey: String): ApiResult<List<JiraTicket>> {
+        val jql = "assignee = currentUser() AND project = '$projectKey' ORDER BY updated DESC"
+        return searchTickets(jql)
+    }
+    
+    /**
+     * Tests the JIRA connection with current configuration
+     */
+    fun testConnection(): ApiResult<String> {
+        val config = GrazeConfigurationService.getInstance().state
+        
+        try {
+            val baseUrl = config.jiraBaseUrl.trimEnd('/')
+            val myselfUrl = "$baseUrl/rest/api/3/myself"
+            
+            val request = Request.Builder()
+                .url(myselfUrl)
+                .get()
+                .header("Authorization", createBasicAuthHeader(config.jiraUsername, config.jiraApiToken))
+                .header("Accept", "application/json")
+                .build()
+            
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    val error = "Authentication failed: HTTP ${response.code} - ${response.message}"
+                    return ApiResult.Error(error)
+                }
+                
+                return ApiResult.Success("Connection successful")
+            }
+        } catch (e: IOException) {
+            val error = "Network error: ${e.message}"
+            return ApiResult.Error(error, e)
+        } catch (e: Exception) {
+            val error = "Unexpected error: ${e.message}"
+            return ApiResult.Error(error, e)
+        }
+    }
+    
+    private fun createBasicAuthHeader(username: String, password: String): String {
+        val credentials = "$username:$password"
+        val encoded = Base64.getEncoder().encodeToString(credentials.toByteArray())
+        return "Basic $encoded"
+    }
+}
