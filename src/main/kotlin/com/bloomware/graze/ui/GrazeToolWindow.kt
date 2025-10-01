@@ -34,7 +34,7 @@ class GrazeToolWindow(private val project: Project) {
     private val logger = thisLogger()
     private val jiraService = JiraService.getInstance()
     private val gitService = GitService.getInstance(project)
-    private val azureService = AzureDevOpsService.getInstance()
+    private val azureService = AzureDevOpsService.getInstance(project)
     
     // UI Components
     private val ticketTable = JBTable()
@@ -120,7 +120,7 @@ class GrazeToolWindow(private val project: Project) {
         // Double-click handler
         ticketTable.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
-                if (e.clickCount == 2) {
+                if ((e.button == 1 && e.clickCount == 2) || e.button == 3) {
                     val selectedRow = ticketTable.selectedRow
                     if (selectedRow >= 0) {
                         showTicketActions(selectedRow)
@@ -172,8 +172,12 @@ class GrazeToolWindow(private val project: Project) {
                                     when (val prResult = azureService.pullRequestExistsForBranch(branchName)) {
                                         is ApiResult.Success -> {
                                             val config = GrazeConfigurationService.getInstance().state
-                                            hasPR = prResult.data != null
-                                            prUrl = "https://dev.azure.com/${config.azureOrganization}/${config.azureProject}/_git/${config.azureRepository}/pullrequest/${prResult.data?.pullRequestId}"
+                                            val repoName = gitService.getGitRepository()?.project?.name
+                                            if (repoName != null) {
+                                                hasPR = prResult.data != null
+                                                prUrl = "https://dev.azure.com/${config.azureOrganization}/${config.azureProject}/_git/${repoName}/pullrequest/${prResult.data?.pullRequestId}"
+                                            }
+                                            
                                         }
                                         is ApiResult.Error -> {
                                             logger.warn("Failed to check PR for ${ticket.key}: ${prResult.message}")
@@ -217,13 +221,17 @@ class GrazeToolWindow(private val project: Project) {
         val ticketInfo = ticketDisplayInfos[row]
         val ticket = ticketInfo.ticket
         
+        val branchName = gitService.getCurrentBranch()
+        
         val actions = mutableListOf<String>()
         actions.add("View in JIRA")
         
         if (!ticketInfo.hasBranch) {
             actions.add("Create Branch")
         } else {
-            actions.add("Switch to Branch")
+            if (ticketInfo.branchName != branchName) {
+                actions.add("Switch to Branch")
+            }
             if (!ticketInfo.hasPullRequest) {
                 actions.add("Create Pull Request")
             } else {

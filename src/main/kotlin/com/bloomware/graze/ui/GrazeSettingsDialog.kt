@@ -30,7 +30,6 @@ class GrazeSettingsDialog(private val project: Project) : DialogWrapper(project)
     // Azure DevOps fields
     private val azureOrganizationField = JBTextField().apply { text = config.state.azureOrganization }
     private val azureProjectField = JBTextField().apply { text = config.state.azureProject }
-    private val azureRepositoryField = JBTextField().apply { text = config.state.azureRepository }
     private val azurePatField = JBPasswordField().apply { text = config.state.azurePersonalAccessToken }
     private val testAzureButton = JButton("Test Connection")
     
@@ -72,10 +71,9 @@ class GrazeSettingsDialog(private val project: Project) : DialogWrapper(project)
             .addTooltip("Your Azure DevOps organization name")
             .addLabeledComponent("Project:", azureProjectField)
             .addTooltip("The project name in Azure DevOps")
-            .addLabeledComponent("Repository:", azureRepositoryField)
-            .addTooltip("The repository name where PRs will be created")
             .addLabeledComponent("Personal Access Token:", azurePatField)
-            .addTooltip("Generate from Azure DevOps > User Settings > Personal Access Tokens\nRequired scopes: Code (read & write), Pull Request (read & write)")
+            .addTooltip("Generate from Azure DevOps > User Settings > Personal Access Tokens")
+            .addTooltip("Required scopes: Code (read & write)")
             .addComponent(createButtonPanel(testAzureButton))
             
             .addVerticalGap(15)
@@ -130,9 +128,6 @@ class GrazeSettingsDialog(private val project: Project) : DialogWrapper(project)
         if (azureProjectField.text.isBlank()) {
             return ValidationInfo("Azure DevOps Project is required", azureProjectField)
         }
-        if (azureRepositoryField.text.isBlank()) {
-            return ValidationInfo("Azure DevOps Repository is required", azureRepositoryField)
-        }
         if (azurePatField.password.isEmpty()) {
             return ValidationInfo("Azure DevOps Personal Access Token is required", azurePatField)
         }
@@ -178,7 +173,6 @@ class GrazeSettingsDialog(private val project: Project) : DialogWrapper(project)
         config.updateAzureDevOpsConfiguration(
             azureOrganizationField.text.trim(),
             azureProjectField.text.trim(),
-            azureRepositoryField.text.trim(),
             String(azurePatField.password)
         )
         
@@ -257,7 +251,6 @@ class GrazeSettingsDialog(private val project: Project) : DialogWrapper(project)
         config.updateAzureDevOpsConfiguration(
             azureOrganizationField.text.trim(),
             azureProjectField.text.trim(),
-            azureRepositoryField.text.trim(),
             String(azurePatField.password)
         )
         
@@ -266,7 +259,7 @@ class GrazeSettingsDialog(private val project: Project) : DialogWrapper(project)
         
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Testing Azure DevOps Connection", false) {
             override fun run(indicator: ProgressIndicator) {
-                val azureService = AzureDevOpsService.getInstance()
+                val azureService = AzureDevOpsService.getInstance(project)
                 val result = azureService.testConnection()
                 
                 // Restore original configuration

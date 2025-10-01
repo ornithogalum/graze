@@ -25,7 +25,6 @@ class GrazeConfigurationService : PersistentStateComponent<GrazeConfigurationSer
         // Azure DevOps Configuration
         var azureOrganization: String = "",
         var azureProject: String = "",
-        var azureRepository: String = "",
         var azurePersonalAccessToken: String = "",
         
         // Git Configuration
@@ -62,7 +61,6 @@ class GrazeConfigurationService : PersistentStateComponent<GrazeConfigurationSer
     fun isAzureDevOpsConfigured(): Boolean {
         return state.azureOrganization.isNotBlank() && 
                state.azureProject.isNotBlank() && 
-               state.azureRepository.isNotBlank() && 
                state.azurePersonalAccessToken.isNotBlank()
     }
     
@@ -72,10 +70,9 @@ class GrazeConfigurationService : PersistentStateComponent<GrazeConfigurationSer
         state.jiraApiToken = apiToken.trim()
     }
     
-    fun updateAzureDevOpsConfiguration(organization: String, project: String, repository: String, pat: String) {
+    fun updateAzureDevOpsConfiguration(organization: String, project: String, pat: String) {
         state.azureOrganization = organization.trim()
         state.azureProject = project.trim()
-        state.azureRepository = repository.trim()
         state.azurePersonalAccessToken = pat.trim()
     }
     

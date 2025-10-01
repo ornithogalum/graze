@@ -56,7 +56,7 @@ A comprehensive JetBrains Rider plugin that streamlines the development workflow
 - **Project**: The project name in Azure DevOps
 - **Repository**: The repository name where PRs will be created
 - **Personal Access Token**: Generate from Azure DevOps → User Settings → Personal Access Tokens
-  - Required scopes: `Code (read & write)`, `Pull Request (read & write)`
+  - Required scopes: `Code (read & write)`
 
 #### Git Configuration
 - **Default Target Branch**: Branch to create new branches from (usually `main` or `master`)

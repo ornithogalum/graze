@@ -4,9 +4,9 @@ import com.bloomware.graze.config.GrazeConfigurationService
 import com.bloomware.graze.model.*
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
+import com.intellij.openapi.project.Project
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -18,8 +18,8 @@ import java.util.concurrent.TimeUnit
  * Service for interacting with Azure DevOps REST API.
  * Handles pull request creation and management.
  */
-@Service
-class AzureDevOpsService {
+@Service(Service.Level.PROJECT)
+class AzureDevOpsService(private val project: Project) {
     
     private val logger = thisLogger()
     private val gson: Gson = GsonBuilder().create()
@@ -28,10 +28,11 @@ class AzureDevOpsService {
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
         .build()
+    private val gitService = GitService.getInstance(project)
     
     companion object {
-        fun getInstance(): AzureDevOpsService {
-            return ApplicationManager.getApplication().getService(AzureDevOpsService::class.java)
+        fun getInstance(project: Project): AzureDevOpsService {
+            return project.getService(AzureDevOpsService::class.java)
         }
     }
     
@@ -69,7 +70,13 @@ class AzureDevOpsService {
         val config = GrazeConfigurationService.getInstance().state
         
         try {
-            val prUrl = buildPullRequestUrl(config.azureOrganization, config.azureProject, config.azureRepository)
+            val repoName = gitService.getGitRepository()?.project?.name
+            if (repoName == null) {
+                val error = "No repository found"
+                logger.error(error)
+                return ApiResult.Error(error)
+            }
+            val prUrl = buildPullRequestUrl(config.azureOrganization, config.azureProject, repoName)
             
             val requestBody = CreatePullRequestRequest(
                 sourceRefName = "refs/heads/$sourceBranch",
@@ -120,7 +127,13 @@ class AzureDevOpsService {
         val config = GrazeConfigurationService.getInstance().state
         
         try {
-            val prUrl = buildPullRequestUrl(config.azureOrganization, config.azureProject, config.azureRepository)
+            val repoName = gitService.getGitRepository()?.project?.name
+            if (repoName == null) {
+                val error = "No repository found"
+                logger.error(error)
+                return ApiResult.Error(error)
+            }
+            val prUrl = buildPullRequestUrl(config.azureOrganization, config.azureProject, repoName)
             val urlWithQuery = "$prUrl&searchCriteria.status=$status"
             
             val request = Request.Builder()

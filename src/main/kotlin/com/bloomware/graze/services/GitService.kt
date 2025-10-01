@@ -130,27 +130,7 @@ class GitService(private val project: Project) {
         return repository.currentBranch?.name
     }
     
-    /**
-     * Gets all local branches that match the ticket pattern
-     */
-    fun getTicketBranches(): List<String> {
-        val repository = getGitRepository() ?: return emptyList()
-        val config = GrazeConfigurationService.getInstance().state
-        
-        return repository.branches.localBranches
-            .map { it.name }
-            .filter { it.startsWith(config.branchPrefix) }
-    }
-    
-    /**
-     * Checks if there are uncommitted changes
-     */
-    fun hasUncommittedChanges(): Boolean {
-        val changeListManager = ChangeListManager.getInstance(project)
-        return changeListManager.allChanges.isNotEmpty()
-    }
-    
-    private fun getGitRepository(): GitRepository? {
+    fun getGitRepository(): GitRepository? {
         val repositoryManager = GitRepositoryManager.getInstance(project)
         val repositories = repositoryManager.repositories
         
