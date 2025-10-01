@@ -234,7 +234,7 @@ class AzureDevOpsService(private val project: Project) {
             appendLine()
             
             appendLine("### Ticket Details")
-            appendLine("- **Type:** ${ticket.fields.issuetype.name}")
+            appendLine("- **Type:** ${ticket.fields.issueType.name}")
             appendLine("- **Status:** ${ticket.fields.status.name}")
             ticket.fields.assignee?.let { assignee ->
                 appendLine("- **Assignee:** ${assignee.displayName}")

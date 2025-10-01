@@ -325,14 +325,7 @@ class GrazeToolWindow(private val project: Project) {
                 when (val result = azureService.createPullRequestFromTicket(ticket, branchName)) {
                     is ApiResult.Success -> {
                         ApplicationManager.getApplication().invokeLater {
-                            val prUrl = result.data.links?.web?.href
-                            val message = if (prUrl != null) {
-                                "Successfully created pull request #${result.data.pullRequestId}"
-                            } else {
-                                "Successfully created pull request #${result.data.pullRequestId}"
-                            }
-                            
-                            Messages.showInfoMessage(project, message, "Pull Request Created")
+                            Messages.showInfoMessage(project, "Successfully created pull request #${result.data.pullRequestId}", "Pull Request Created")
                             refreshTickets()
                         }
                     }

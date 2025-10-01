@@ -1,7 +1,5 @@
 package com.bloomware.graze.model
 
-import com.google.gson.annotations.SerializedName
-
 /**
  * Data classes representing JIRA API responses and ticket information.
  */
@@ -18,7 +16,7 @@ data class JiraFields(
     val status: JiraStatus,
     val assignee: JiraUser?,
     val reporter: JiraUser?,
-    val issuetype: JiraIssueType,
+    val issueType: JiraIssueType,
     val created: String,
     val updated: String
 )
@@ -73,16 +71,6 @@ data class AzurePullRequest(
     val sourceRefName: String,
     val targetRefName: String,
     val status: String,
-    @SerializedName("_links")
-    val links: AzureLinks?
-)
-
-data class AzureLinks(
-    val web: AzureWebLink?
-)
-
-data class AzureWebLink(
-    val href: String
 )
 
 data class CreatePullRequestRequest(
