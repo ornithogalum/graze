@@ -48,7 +48,7 @@
         <applicationService serviceImplementation="com.bloomware.graze.config.GrazeConfigurationService"/>
 
         <!-- Tool Window -->
-        <toolWindow id="Graze" anchor="right" icon="/icons/pluginIcon.svg" factoryClass="com.bloomware.graze.ui.GrazeToolWindowFactory"/>
+        <toolWindow id="Graze" anchor="right" icon="AllIcons.Toolwindows.Changes" factoryClass="com.bloomware.graze.ui.GrazeToolWindowFactory"/>
     </extensions>
     
     <!-- Actions -->
