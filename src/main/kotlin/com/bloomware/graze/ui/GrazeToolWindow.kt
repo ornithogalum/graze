@@ -171,8 +171,9 @@ class GrazeToolWindow(private val project: Project) {
                                 if (hasBranch && branchName != null) {
                                     when (val prResult = azureService.pullRequestExistsForBranch(branchName)) {
                                         is ApiResult.Success -> {
+                                            val config = GrazeConfigurationService.getInstance().state
                                             hasPR = prResult.data != null
-                                            prUrl = prResult.data?.links?.web?.href
+                                            prUrl = "https://dev.azure.com/${config.azureOrganization}/${config.azureProject}/_git/${config.azureRepository}/pullrequest/${prResult.data?.pullRequestId}"
                                         }
                                         is ApiResult.Error -> {
                                             logger.warn("Failed to check PR for ${ticket.key}: ${prResult.message}")

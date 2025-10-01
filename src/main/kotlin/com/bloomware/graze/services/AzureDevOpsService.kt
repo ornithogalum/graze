@@ -121,7 +121,7 @@ class AzureDevOpsService {
         
         try {
             val prUrl = buildPullRequestUrl(config.azureOrganization, config.azureProject, config.azureRepository)
-            val urlWithQuery = "$prUrl?searchCriteria.status=$status"
+            val urlWithQuery = "$prUrl&searchCriteria.status=$status"
             
             val request = Request.Builder()
                 .url(urlWithQuery)

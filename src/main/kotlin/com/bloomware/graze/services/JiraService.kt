@@ -65,13 +65,13 @@ class JiraService {
         
         try {
             val baseUrl = config.jiraBaseUrl.trimEnd('/')
-            val searchUrl = "$baseUrl/rest/api/3/search"
+            val searchUrl = "$baseUrl/rest/api/3/search/jql"
             
             val requestBody = mapOf(
                 "jql" to jql,
                 "maxResults" to maxResults,
                 "fields" to listOf("summary", "description", "status", "assignee", "reporter", "issuetype", "priority", "created", "updated"),
-                "expand" to listOf("names", "schema")
+                "expand" to "names, schema"
             )
             
             val request = Request.Builder()
