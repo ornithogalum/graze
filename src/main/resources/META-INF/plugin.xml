@@ -48,14 +48,22 @@
         <applicationService serviceImplementation="com.bloomware.graze.config.GrazeConfigurationService"/>
 
         <!-- Tool Window -->
-        <toolWindow id="Graze" anchor="right" icon="AllIcons.Toolwindows.Changes" factoryClass="com.bloomware.graze.ui.GrazeToolWindowFactory"/>
+        <toolWindow
+                id="Graze"
+                anchor="right"
+                icon="AllIcons.Toolwindows.Changes"
+                factoryClass="com.bloomware.graze.ui.GrazeToolWindowFactory"/>
     </extensions>
     
     <!-- Actions -->
     <actions>
         <group id="GrazeActions" text="Graze" popup="true">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
-            <action id="Graze.OpenToolWindow" class="com.bloomware.graze.actions.OpenGrazeToolWindowAction" text="Open Graze Tool Window" description="Open the Graze tool window to manage JIRA tickets and Azure DevOps integration"/>
+            <action
+                    id="Graze.OpenToolWindow"
+                    class="com.bloomware.graze.actions.OpenGrazeToolWindowAction"
+                    text="Open Graze Tool Window"
+                    description="Open the Graze tool window to manage JIRA tickets and Azure DevOps integration"/>
         </group>
     </actions>
 </idea-plugin>
