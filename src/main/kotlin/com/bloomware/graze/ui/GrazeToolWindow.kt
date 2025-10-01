@@ -89,9 +89,8 @@ class GrazeToolWindow(private val project: Project) {
             getColumn(0).preferredWidth = 100  // Key
             getColumn(1).preferredWidth = 300  // Summary
             getColumn(2).preferredWidth = 80   // Status
-            getColumn(3).preferredWidth = 80   // Priority
-            getColumn(4).preferredWidth = 100  // Branch
-            getColumn(5).preferredWidth = 80   // PR
+            getColumn(3).preferredWidth = 100  // Branch
+            getColumn(4).preferredWidth = 80   // PR
         }
         
         // Custom renderer for status column
@@ -377,7 +376,7 @@ class GrazeToolWindow(private val project: Project) {
     
     // Table model for displaying tickets
     private inner class TicketTableModel : AbstractTableModel() {
-        private val columnNames = arrayOf("Key", "Summary", "Status", "Priority", "Branch", "PR")
+        private val columnNames = arrayOf("Key", "Summary", "Status", "Branch", "PR")
         
         override fun getRowCount(): Int = ticketDisplayInfos.size
         override fun getColumnCount(): Int = columnNames.size
@@ -391,9 +390,8 @@ class GrazeToolWindow(private val project: Project) {
                 0 -> ticket.key
                 1 -> ticket.fields.summary
                 2 -> ticket.fields.status.name
-                3 -> ticket.fields.priority?.name ?: "-"
-                4 -> if (ticketInfo.hasBranch) "✓" else "-"
-                5 -> if (ticketInfo.hasPullRequest) "✓" else "-"
+                3 -> if (ticketInfo.hasBranch) "✓" else "-"
+                4 -> if (ticketInfo.hasPullRequest) "✓" else "-"
                 else -> ""
             }
         }

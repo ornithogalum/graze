@@ -6,7 +6,7 @@ A comprehensive JetBrains Rider plugin that streamlines the development workflow
 
 ### 🎫 JIRA Integration
 - **List Assigned Tickets**: View all JIRA tickets assigned to you with real-time status updates
-- **Ticket Details**: See ticket summary, status, priority, and other key information
+- **Ticket Details**: See ticket summary, status, and other key information
 - **Direct Links**: Open tickets directly in JIRA from the plugin
 
 ### 🌿 Git Branch Management
@@ -74,7 +74,7 @@ A comprehensive JetBrains Rider plugin that streamlines the development workflow
 4. **Create PR**: Double-click the ticket again and select "Create Pull Request"
 
 ### Tool Window Features
-- **Ticket List**: Shows key, summary, status, priority, and branch/PR status
+- **Ticket List**: Shows key, summary, status, and branch/PR status
 - **Status Colors**: Visual indicators for different ticket statuses
 - **Quick Actions**: Double-click for context menu with available actions
 - **Refresh**: Manual refresh button to get latest ticket updates

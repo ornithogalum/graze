@@ -70,7 +70,7 @@ class JiraService {
             val requestBody = mapOf(
                 "jql" to jql,
                 "maxResults" to maxResults,
-                "fields" to listOf("summary", "description", "status", "assignee", "reporter", "issuetype", "priority", "created", "updated"),
+                "fields" to listOf("summary", "description", "status", "assignee", "reporter", "issuetype", "created", "updated"),
                 "expand" to "names, schema"
             )
             

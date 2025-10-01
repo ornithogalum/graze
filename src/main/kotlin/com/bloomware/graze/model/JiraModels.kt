@@ -19,7 +19,6 @@ data class JiraFields(
     val assignee: JiraUser?,
     val reporter: JiraUser?,
     val issuetype: JiraIssueType,
-    val priority: JiraPriority?,
     val created: String,
     val updated: String
 )
@@ -42,11 +41,6 @@ data class JiraUser(
 )
 
 data class JiraIssueType(
-    val name: String,
-    val iconUrl: String?
-)
-
-data class JiraPriority(
     val name: String,
     val iconUrl: String?
 )
